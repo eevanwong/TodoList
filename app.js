@@ -13,9 +13,9 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/todoDB", {
+mongoose.connect("mongodb+srv://admin-evan:starwarsclonewars@cluster0.p1cma.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useUnifiedTopology: true, 
 });
 
 mongoose.set('useFindAndModify', false);
