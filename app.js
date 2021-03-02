@@ -34,9 +34,17 @@ const item2 = new Item({
 const item3 = new Item({
   name: "<-- Hit this to delete an item.",
 });
+
 const defaultItems = [item1, item2, item3];
 
-app.get("/", (req, res  ) => {
+const listSchema =  {   //why is this not a new mongoose.Schema?
+  name: String,
+  items: [itemSchema]
+};
+
+const List = mongoose.model("List", listSchema);
+
+app.get("/", (req, res) => {
   const day = date.getDate();
   Item.find({}, (err, foundItems) => {
     if (foundItems.length === 0) {
@@ -57,30 +65,74 @@ app.get("/", (req, res  ) => {
 
 app.post("/", (req, res) => {
   const itemName = req.body.newItem
-  
+  const listName = req.body.list;
+
   const item =new Item({
     name: itemName})
+  
+  if (listName == date.getDate()) {
+    item.save();
+    res.redirect("/");
+  } else {
+    List.findOne({name: listName}, (err,foundList) => {
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + listName);
+    })
+  }
 
-  item.save();
-  res.redirect("/")
+  
 
   });
 
 app.post("/delete", (req,res) => {
   const checkboxedId = req.body.checkbox;
-  Item.findByIdAndRemove(checkboxedId,(err) =>{
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("deletion successful")
-    }
-  })
-  res.redirect("/")
+  const listName = req.body.listName;
+
+  if (listName === date.getDate()) {
+    Item.findByIdAndRemove(checkboxedId,(err) =>{
+      if (!err) {
+        console.log("deletion successful")
+        res.redirect("/")
+      }
+    });
+  } else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items : {_id: checkboxedId}}}, (err, foundList) => {
+      if (!err) {
+        res.redirect("/" + listName)
+      }
+    })
+  }
+
+  
 })
 
 app.get("/about", (req, res) => {
   res.render("about");
 });
+
+app.get("/:customListName",(req,res) => {
+  const listName = req.params.customListName;
+  console.log(listName)
+
+  List.findOne({name: listName}, (err,foundList) => {
+    if (!err) {
+      if (!foundList) {
+        const list = new List({
+          name: listName,
+          items: defaultItems
+        })
+        list.save();
+        
+        res.redirect("/" + listName)
+      } else {
+        res.render("list", {kindOfTitle: foundList.name, list: foundList.items })
+      } 
+    }
+  })
+
+
+})
 
 app.listen(4000, () => {
   console.log("4000 port fk u");
