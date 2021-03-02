@@ -137,6 +137,11 @@ app.get("/:customListName",(req,res) => {
 
 })
 
-app.listen(4000, () => {
-  console.log("4000 port fk u");
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+app.listen(port, () => {
+  console.log("server started on" + port)
 });
+
