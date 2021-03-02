@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 const date = require(__dirname + "/date.js"); //requiring local modules need to use this format
 
@@ -16,6 +17,8 @@ mongoose.connect("mongodb://localhost:27017/todoDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+mongoose.set('useFindAndModify', false);
 
 const itemSchema = new mongoose.Schema({
   name: String,
@@ -112,7 +115,7 @@ app.get("/about", (req, res) => {
 });
 
 app.get("/:customListName",(req,res) => {
-  const listName = req.params.customListName;
+  const listName = _.capitalize(req.params.customListName);
   console.log(listName)
 
   List.findOne({name: listName}, (err,foundList) => {
